@@ -10,57 +10,80 @@ import (
 
 func main() {
 
-	postStuffResponse := callPostStuff()
-	fmt.Printf("\nResponse to POST /stuff is as follows [ " + postStuffResponse + " ]")
+	testPostStuff()
+	testGetStuff()
+	testPing()
+	testGetUsersWithDynamicRoute()
+	testGetUsersWithQueryParam()
 
-	//expectedJson := "{\"this\":\"that-NEW\",\"arr\":[{\"a1\":2,\"b1\":\"bee one-UPDATED\"}]}"
-	expectedJson := `{"this":"that-NEW","arr":[{"a1":2,"b1":"bee one-UPDATED"}]}`
-	if postStuffResponse != expectedJson {
-		fmt.Printf("\nPOST /stuff FAILED\n expected: %s\n got: %s",expectedJson,postStuffResponse)
+}
+func testGetUsersWithQueryParam() {
+	userId := "User1"
+	expectedGetUsersResponse := "GET /users: user id param is " + userId
+	getUsersResponse := callGetUsersWithQueryParams(userId)
+	fmt.Printf("\nResponse to GET /users/?userId= is as follows [ " + getUsersResponse + " ]")
+	if getUsersResponse != expectedGetUsersResponse {
+		fmt.Printf("\nGET /users/{userId} FAILED\n expected: %s\n got: %s", expectedGetUsersResponse, getUsersResponse)
 	} else {
 		fmt.Println("\nwhich is what was expected")
 	}
-
-	expectedGetStuffResponse := "from Get: here is some stuff"
-	getStuffResponse := callGetStuff()
-	fmt.Printf("\nResponse to GET /stuff is as follows [ " + getStuffResponse + " ]")
-	if getStuffResponse != expectedGetStuffResponse {
-		fmt.Printf("\nGET /stuff FAILED\n expected: %s\n got: %s",expectedGetStuffResponse,getStuffResponse)
-	} else {
-		fmt.Println("\nwhich is what was expected")
-	}
-
-	headerValue := "my very own header value"
-	expectedGetPingResponse := "pong.  you sent " + headerValue
-	getPingResponse := callGetPing(headerValue)
-	fmt.Printf("\nResponse to GET /ping is as follows [ " + getPingResponse + " ]")
-	if getPingResponse != expectedGetPingResponse {
-		fmt.Printf("\nGET /ping FAILED\n expected: %s\n got: %s",expectedGetPingResponse,getPingResponse)
-	} else {
-		fmt.Println("\nwhich is what was expected")
-	}
-
+}
+func testGetUsersWithDynamicRoute() {
 
 	userId := "most excellent user"
-	expectedGetUsersResponse := "GET /users/{userId}: view user id " + userId
-	getUsersResponse := callGetUsers(userId)
+	expectedGetUsersResponse := "GET /users/{userId}: user id is " + userId
+	getUsersResponse := callGetUsersWithDynamicRoute(userId)
 	fmt.Printf("\nResponse to GET /users/{userId} is as follows [ " + getUsersResponse + " ]")
 	if getUsersResponse != expectedGetUsersResponse {
-		fmt.Printf("\nGET /users/{userId} FAILED\n expected: %s\n got: %s",expectedGetUsersResponse,getUsersResponse)
+		fmt.Printf("\nGET /users/{userId} FAILED\n expected: %s\n got: %s", expectedGetUsersResponse, getUsersResponse)
 	} else {
 		fmt.Println("\nwhich is what was expected")
 	}
 
 	numericUserId := 12345
-	expectedNumericGetUsersResponse := fmt.Sprintf("GET /users/{userId}: view user id %v", numericUserId)
-	numericGetUsersResponse := callGetUsers(strconv.Itoa(numericUserId))
+	expectedNumericGetUsersResponse := fmt.Sprintf("GET /users/{userId}: user id is %v", numericUserId)
+	numericGetUsersResponse := callGetUsersWithDynamicRoute(strconv.Itoa(numericUserId))
 	fmt.Printf("\nResponse to GET /users/{userId} is as follows [ " + numericGetUsersResponse + " ]")
 	if numericGetUsersResponse != expectedNumericGetUsersResponse {
 		fmt.Printf("\nGET /users/{userId} FAILED\n expected: %s\n got: %s", expectedNumericGetUsersResponse, numericGetUsersResponse)
 	} else {
 		fmt.Println("\nwhich is what was expected")
 	}
+}
 
+
+func testPing() {
+	headerValue := "my very own header value"
+	expectedGetPingResponse := "pong.  you sent " + headerValue
+	getPingResponse := callGetPing(headerValue)
+	fmt.Printf("\nResponse to GET /ping is as follows [ " + getPingResponse + " ]")
+	if getPingResponse != expectedGetPingResponse {
+		fmt.Printf("\nGET /ping FAILED\n expected: %s\n got: %s", expectedGetPingResponse, getPingResponse)
+	} else {
+		fmt.Println("\nwhich is what was expected")
+	}
+}
+
+func testGetStuff() {
+	expectedGetStuffResponse := "from Get: here is some stuff"
+	getStuffResponse := callGetStuff()
+	fmt.Printf("\nResponse to GET /stuff is as follows [ " + getStuffResponse + " ]")
+	if getStuffResponse != expectedGetStuffResponse {
+		fmt.Printf("\nGET /stuff FAILED\n expected: %s\n got: %s", expectedGetStuffResponse, getStuffResponse)
+	} else {
+		fmt.Println("\nwhich is what was expected")
+	}
+}
+func testPostStuff() {
+	postStuffResponse := callPostStuff()
+	fmt.Printf("\nResponse to POST /stuff is as follows [ " + postStuffResponse + " ]")
+	//expectedJson := "{\"this\":\"that-NEW\",\"arr\":[{\"a1\":2,\"b1\":\"bee one-UPDATED\"}]}"
+	expectedJson := `{"this":"that-NEW","arr":[{"a1":2,"b1":"bee one-UPDATED"}]}`
+	if postStuffResponse != expectedJson {
+		fmt.Printf("\nPOST /stuff FAILED\n expected: %s\n got: %s", expectedJson, postStuffResponse)
+	} else {
+		fmt.Println("\nwhich is what was expected")
+	}
 }
 
 func callPostStuff() string {
@@ -108,9 +131,8 @@ func callGetStuff() string {
 
 }
 
-func callGetUsers(userId string) string {
+func callGetUsersWithDynamicRoute(userId string) string {
 
-	// Generated by curl-to-Go: https://mholt.github.io/curl-to-go
 	resp, err := http.Get("http://localhost:3000/users/" + userId)
 	if err != nil {
 		fmt.Printf("Error calling GET /users/" + userId)
@@ -127,6 +149,23 @@ func callGetUsers(userId string) string {
 
 }
 
+func callGetUsersWithQueryParams(userId string) string {
+
+	resp, err := http.Get("http://localhost:3000/users?userId=" + userId)
+	if err != nil {
+		fmt.Printf("Error calling GET /users?userId=" + userId)
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(responseBody)
+
+
+}
 func callGetPing(headerValue string) string {
 	// Generated by curl-to-Go: https://mholt.github.io/curl-to-go
 
